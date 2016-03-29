@@ -1,0 +1,39 @@
+<px-card header-text="Locomotive Graph">
+        
+</px-card>
+
+
+<!-- <px-card ng-init="getLatest()"  style="margin:0px 0px 0px 0px"> 
+ 	 
+	 	 <div id="dataheader">
+	 	 	<p style="color:#000000;font-size:24px;" > LATEST DATA FOR LOCOMOTIVE_1 </p>
+	 	 </div>
+	 	 <div id="data">{{allLatestData}}</div>
+	 	 <div id="length">{{entry}}</div>
+ 	
+        
+</px-card>  -->
+
+
+<px-card header-text="Torque Chart" >
+<px-chart>
+  <px-chart-series-line id="Torque-graph" data="{{uptorquedata}}">
+  </px-chart-series-line>
+</px-chart>
+        
+</px-card>
+<px-card header-text="RPM Chart">
+<px-chart>
+  <px-chart-series-line id="RPM-graph" data="{{uprpmdata}}">
+  </px-chart-series-line>
+</px-chart>
+        
+</px-card>
+
+<px-card header-text="Location Chart">
+<px-chart>
+  <px-chart-series-line id="location-graph" data="{{uplocationdata}}">
+  </px-chart-series-line>
+</px-chart>
+        
+</px-card>

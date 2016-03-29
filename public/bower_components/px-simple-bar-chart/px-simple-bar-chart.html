@@ -1,0 +1,302 @@
+<link rel="import" href="../polymer/polymer.html"/>
+<link rel="import" href="../px-simple-chart-common-behavior/px-simple-chart-common-behavior.html" />
+<!--
+A simple bar chart that visualizes series data.
+
+##### Usage
+
+    <px-simple-bar-chart chart-data="[ [1,2,3] ]">
+    </px-simple-bar-chart>
+
+    <px-simple-bar-chart chart-data="[ [1,2,3], [1,2,3], [1,2,3] ]">
+    </px-simple-bar-chart>
+
+@element px-simple-bar-chart
+@blurb Predix Experience Simple Bar Chart
+@homepage index.html
+@demo demo.html
+-->
+<dom-module id="px-simple-bar-chart">
+    <script type="text/javascript" src="../d3/d3.js"></script>
+    <link rel="import" type="css" href="css/px-simple-bar-chart.css"/>
+    <template>
+        <svg class="px-simple-bar-chart-svg"></svg>
+    </template>
+</dom-module>
+
+<script>
+
+    var defaultColors = ['#5da5da', '#faa43a', '#60bd68', '#f17cb0', '#b2912f',
+        '#b276b2', '#decf3f', '#f15854', '#4d4d4d'];
+    var defaultChartData = [
+        [1,2,3,4,5,6,7],
+        [7,6,5,4,3,2,1],
+        [2,4,6,7,5,3,1]
+    ];
+
+    Polymer({
+
+        is: 'px-simple-bar-chart',
+
+        behaviors: [pxSimpleChartCommonBehavior],
+
+        minimumHeight: 150,
+        minimumWidth: 120,
+
+        /**
+         * Properties block, expose attribute values to the DOM via 'reflect'
+         *
+         * @property properties
+         * @type Object
+         */
+        properties: {
+            /**
+            * chartData
+            *
+            * Format: [ [7, 11], [10, 4], [15, 10] ... ]
+            */
+            chartData: {
+                type: Array,
+                observer: '_drawChart',
+                value: function() {
+                    return defaultChartData;
+                }
+            },
+            /**
+            * legendLabels
+            *
+            * Format: Array
+            */
+            legendLabels: {
+                type: Array,
+                observer: '_drawChart',
+                value: function() {
+                    return [];
+                }
+            },
+            /**
+            * colors
+            *
+            * Format: Array
+            */
+            colors: {
+                type: Array,
+                observer: '_drawChart',
+                value: function() {
+                    return defaultColors;
+                }
+            },
+
+            /**
+            * legendOrder
+            *
+            * Format: string
+            */
+            legendOrder: {
+                type: String,
+                observer: '_drawChart',
+                value: 'reverse'
+            }
+        },
+
+        _drawChartDebounced: function() {
+            if(this.chartData && this.chartData.length > 0) {
+                // clear the svg element
+                this._clearSVG(this.svg);
+                this._setDimensions();
+                var setSizesPromise = this._getSetSizesPromise();
+                var that = this;
+                setSizesPromise.then (function (){
+                    that._setScales();
+                    that._drawBars();
+                    // that._requireLegend() ? that._drawLegend() : false;
+                    // add css class to svg elements using method from pxD3Util
+                    that._addStyleScope(that.svg);
+                });
+            } else {
+                var that = this;
+                var timeout = setTimeout(function(){
+                    that._drawChartDebounced();
+                }, 100);
+            }
+        },
+
+        _getSetSizesPromise: function() {
+            var that = this;
+            return new Promise (function (resolve, reject){
+                that.gridColumns = (that._getLongestSeries(that.chartData).length * 2 ) - 1;
+                that.gridWidth = Math.round(that.widthValue / that.gridColumns);
+                that.chartWidth = that.gridWidth * that.gridColumns;
+                that.widthRemainder = that.widthValue % that.gridWidth;
+                if(that._requireLegend()) {
+                    //TODO: refactor to only measure, currently it also draws the legend
+                    var legendHeightPromise = that._getLegendHeightPromise();
+                    legendHeightPromise.then(function (cumulative){
+                        that.legendHeight = cumulative.y + 25;
+                        that.chartHeight = that.heightValue - that.legendHeight;
+                        that.svg
+                                .attr("width", that.chartWidth)
+                                .attr("height", that.heightValue);
+                        resolve(true);
+                    });
+                } else {
+                    that.legendHeight = 0;
+                    that.chartHeight = that.heightValue;
+                    that.svg
+                            .attr("width", that.chartWidth)
+                            .attr("height", that.heightValue);
+                    resolve(true);
+                };
+            });
+        },
+
+        _requireLegend: function() {
+            // legend is required if any of the
+            return this.chartData.length > 1;
+        },
+
+        _getMax: function() {
+            var arr = [];
+            this.chartData.forEach(function(series, i) {
+                series.forEach(function(value, j) {
+                    var valueType = typeof arr[j];
+                    if(valueType.toString() === "undefined") {
+                        arr[j] = value;
+                    } else {
+                        arr[j] += value;
+                    }
+                });
+            });
+            return d3.max(arr);
+        },
+
+        _setScales: function() {
+            // no xscale necessary
+            this.yScale = d3.scale
+                .linear()
+                .domain([0, this._getMax()])
+                .range([0, this.chartHeight]);
+        },
+
+        _getLegendHeightPromise: function() {
+            return this._drawLegend(true);
+        },
+
+        _getColor: function(index) {
+            if(index >= 0 && index < this.colors.length) {
+                return this.colors[index];
+            } else {
+                // recurse and loop through color list
+                return this._getColor(Math.abs(this.colors.length - index));
+            };
+        },
+
+        _drawLegendItem: function(i, cumulative) {
+            var that = this;
+            return new Promise(function (resolve, reject){
+                var series = that.chartData[i];
+                var squareSize = 10;
+                var margin = 5;
+                var seriesTotal = that._getSeriesTotal(series);
+                if(that.legendLabels.length > i) {
+                    var labelText = that.legendLabels[i];
+                } else {
+                    var labelText = seriesTotal;
+                };
+                var textWidthPromise = that._calculateTextWidth(labelText, "legend-text");
+                textWidthPromise.then(function (textWidth){
+                    var fullWidth = squareSize + margin + textWidth;
+                    var endPosition = fullWidth + cumulative.x;
+                    var color = that._getColor(i);
+                    if(endPosition >= that.chartWidth) {
+                        cumulative.y += 20;
+                        cumulative.x = 0;
+                    };
+                    var rectNode = that.svg
+                            .append("rect")
+                            .attr("class", "legend-box")
+                            .attr("x", cumulative.x)
+                            .attr("y", cumulative.y)
+                            .attr("width", squareSize)
+                            .attr("height", squareSize)
+                            .attr("fill", color);
+                    cumulative.x += squareSize + margin;
+                    var textNode = that.svg
+                            .append("text")
+                            .attr("class", "legend-text")
+                            .attr("x", cumulative.x)
+                            .attr("y", cumulative.y + 9)
+                            .text(labelText);
+                    cumulative.x += Math.round(textWidth + (margin * 3));
+                    resolve ({
+                        x: cumulative.x,
+                        y: cumulative.y
+                    });
+                });
+            });
+        },
+
+
+
+        _drawLegend: function(dryRun) {
+            // TODO: Clean up this method, it is a bit unruly.
+            // TODO: refactor to only measure or draw
+            // dry run is meant to only calculate necessary height of legend
+            // track X position as legend is drawn across the top of the chart
+            var dryRun = dryRun || false;
+            var dataLength = this.chartData.length;
+            var i;
+            var cumulative = { x: 0, y: 5 };
+            // legend can be ordered in reverse (default), or sequential
+            if(this.legendOrder === 'reverse') {
+                for(i=dataLength-1; i>=0; i--) {
+                    cumulativePromise = this._drawLegendItem(i, cumulative);
+                };
+            } else if(this.legendOrder === 'sequential') {
+                for(i=0; i<dataLength; i++) {
+                    cumulativePromise = this._drawLegendItem(i, cumulative);
+                };
+            };
+            if(dryRun) {
+                return cumulativePromise;
+            };
+        },
+
+        _drawBars: function() {
+            var offsets = []; // accumulate y for each value stack
+            var that = this;
+            this.chartData.forEach(function(series, i) {
+                var color = that._getColor(i);
+                series.forEach(function(value, j) {
+                    // for each series draw a bar representing each value
+                    var barHeight = Math.floor(that.yScale(value));
+                    var typeofElement = typeof offsets[j];
+                    var isFirst = typeofElement.toString() === 'undefined';
+                    offsets[j] = isFirst ? barHeight : offsets[j] + barHeight;
+                    var y = that.heightValue - offsets[j] - 1;
+                    var x = (that.gridWidth*2) * j;
+                    that._drawBar(x, y, that.gridWidth, barHeight, i, color);
+                });
+            });
+            this.svg
+                .append("line")
+                .attr("class", "px-simple-bar-chart bar-chart-bottom-line")
+                .attr("x1", 0)
+                .attr("y1", this.heightValue)
+                .attr("x2", this.chartWidth)
+                .attr("y2", this.heightValue);
+        },
+
+        _drawBar: function(x, y, width, height, i, color) {
+            this.svg
+                .append("rect")
+                .attr("class", "bar")
+                .attr("x", x)
+                .attr("y", y)
+                .attr("width", width)
+                .attr("height", height)
+                .attr("fill", color);
+        }
+
+    });
+</script>

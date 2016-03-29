@@ -1,0 +1,41 @@
+<div  >
+
+<px-card>
+
+	<div style="padding-top:10px;font-weight:bold">
+	Locomotive Asset Details
+	</div>
+</px-card>
+
+  
+ <px-card>
+  <div  id="assetView" style="height: 640px;width:100%" ng-show="viewshow">
+  </div>
+
+  <div  id="assetView" style="width:100%" >
+  	<div class= "layout" ng-repeat="tr in allLocomotiveDetails" style="padding-left:40px;display:inline-block" >
+  		<div id="locomotive" >
+  			<p class="locomotiveDetailColor"><span style="font-weight:bold">Locomotive Serial No: </span>{{tr.serial_no}}</p>
+  			<p class="locomotiveDetailColor"><span style="font-weight:bold">Type: </span>{{tr.type}}</p>
+  			<p class="locomotiveDetailColor"><span style="font-weight:bold">Model: </span> {{tr.model}}</p>
+  			<p class="locomotiveDetailColor"><span style="font-weight:bold">Emission Tier: </span>{{tr.emission_tier}}</p>
+  			<p class="locomotiveDetailColor"><span style="font-weight:bold">Fleet: </span>{{tr.fleet}}</p>
+  			<p class="locomotiveDetailColor"><span style="font-weight:bold">Manufacture: </span>{{tr.manufacturer}}</p>
+  			<p class="locomotiveDetailColor"><span style="font-weight:bold">Engine: </span>{{tr.engine}}</p>
+  			<p class="locomotiveDetailColor"><span style="font-weight:bold">Installed On: </span>{{tr.installedOn}}</p>
+  			<p class="locomotiveDetailColor"><span style="font-weight:bold">Date ISO: </span>{{tr.dateIso}}</p>
+  			
+  			 <div style="display:inline-block">
+
+    			<button id="{{tr.serial_no}}" type="button" name="button" class="locomotiveViewButton "  ng-click="showChart(tr.serial_no)"  ng-disabled="tr.showChartDetails"> View Chart Details</button>
+
+  			</div>
+  		</div>
+  		
+
+  	</div>
+  </div>
+ 
+
+</px-card>
+</div>

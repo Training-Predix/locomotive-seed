@@ -1,0 +1,26 @@
+{
+  "name": "px-simple-chart-common-behavior",
+  "version": "1.2.2",
+  "main": [
+    "px-simple-chart-common-behavior.html"
+  ],
+  "ignore": [
+    ".*",
+    "npm-debug.log",
+    "Gruntfile.js",
+    "sass",
+    "bower_components",
+    "node_modules",
+    "test"
+  ],
+  "dependencies": {
+    "polymer": "~1.2.3",
+    "px-theme": "https://github.com/PredixDev/px-theme.git#~0.4.0",
+    "px": "https://github.com/PredixDev/px.git#1.2.2",
+    "es6-promise": "~3.0.2"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#~v1.1.0",
+    "px-starter-kit-design": "https://github.com/PredixDev/px-starter-kit-design.git#~0.4.9"
+  }
+}

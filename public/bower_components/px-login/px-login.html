@@ -1,0 +1,223 @@
+<link rel="import" href="../polymer/polymer.html"/>
+
+<!--
+Element providing a login/logout button that integrates nicely with Cloud Foundry's UAA.
+
+##### Usage
+
+    <px-login
+        menu-items='[{"label": "Setting Item 1", "url":"/user-settings1"}]'
+        logout-url="logged_out.html"
+        user-info-url="userInfo.js">
+    </px-login>
+
+@element px-login
+@blurb Element providing a login/logout button.
+@homepage index.html
+@demo demo.html
+-->
+<dom-module id="px-login">
+  <script>
+    // Conditional loading of es6-promise polyfill
+    if(typeof ES6Promise === "undefined"){
+      var script = document.createElement('script');
+      script.async = true;
+      script.src = '../es6-promise/dist/es6-promise.min.js';
+      document.head.appendChild(script);
+    };
+  </script>
+  <link rel="import" type="css" href="css/px-login.css"/>
+  <template>
+    <div id="logincontainer" class="login">
+      <template is="dom-if" if="{{!userInfo.user_name}}">
+        <button class="btn btn--bare" on-click="loginHandler">
+          <i class="fa fa-user text--center u-mr--"></i>
+          <span>Sign In</span>
+        </button>
+      </template>
+      <template is="dom-if" if="{{userInfo.user_name}}">
+        <button class="btn btn--bare">
+          <i class="fa fa-user text--center"></i>
+          <span class="u-mh--">{{userInfo.user_name}}</span>
+          <i class="fa fa-angle-up"></i>
+        </button>
+        <ul class="dropdown-menu list-bare">
+          <template is="dom-repeat" items="{{menuItems}}">
+            <li on-click="menuItemHandler" url$="{{item.url}}"><a>{{item.label}}</a></li>
+          </template>
+          <li on-click="logoutHandler"><a>Sign Out</a></li>
+        </ul>
+      </template>
+    </div>
+  </template>
+</dom-module>
+
+<script>
+    (function () {
+        window.px = window.px || {};
+        px.auth = px.auth || {
+            _loginUrl: null,
+            set loginUrl(val) {
+                this._loginUrl = val;
+            },
+            _logoutUrl: null,
+            set logoutUrl(val) {
+                this._logoutUrl = val;
+            },
+            _userInfoUrl: null,
+            set userInfoUrl(val) {
+                this._userInfoUrl = val;
+            },
+            login: function (clientPath) {
+                if (!this._loginUrl) {
+                    throw 'login url is not set';
+                }
+                if (!clientPath) {
+                  window.location.replace(this._loginUrl + '?state=' + location.href);
+                } else {
+                  //this causes an error, what should it do?
+                  window.location.replace(this._loginUrl + '?state='+ clientPath.url);
+                }
+            },
+            logout: function () {
+                if (!this._logoutUrl) {
+                    throw 'login url is not set';
+                }
+                window.location.replace(this._logoutUrl);
+            },
+            getUserInfo: function () {
+                var self = this;
+                if (!this._userInfoUrl) {
+                    throw 'userInfo url is not set';
+                }
+
+                return new Promise(function (resolve, reject) {
+                    var xmlhttp = new XMLHttpRequest();
+                    xmlhttp.onreadystatechange = function () {
+                        if (xmlhttp.readyState == 4) {
+                            if (xmlhttp.status == 200) {
+                                try {
+                                    resolve(JSON.parse(xmlhttp.responseText));
+                                }
+                                catch (e) {
+                                    reject(e);
+                                }
+                            }
+                            else {
+                                reject();
+                            }
+                        }
+                    }
+                    xmlhttp.open("GET", self._userInfoUrl, true);
+                    xmlhttp.send();
+                });
+            },
+            isAuthenticated: function () {
+                return this.getUserInfo();
+            }
+        };
+      })();
+
+        Polymer({
+            is: 'px-login',
+            properties: {
+                loginUrl: {
+                    type: String,
+                    value: '/login'
+                },
+                userInfoUrl: {
+                    type: String,
+                    value: '/userinfo'
+                },
+                logoutUrl: {
+                    type: String,
+                    value: '/logout'
+                },
+                defaultClientRoute: {
+                    type: String,
+                    value: '/about'
+                },
+                userInfo: {
+                  type: Object,
+                  value: function(){
+                    return {};
+                  }
+                },
+                /**
+                 * This menu items will display above sign out after login
+                 * e.g. user setting, user preference menu item
+                 *
+                 * menu items format
+                 * [{"url":"/user-settings", "label": "User Settings"}]
+                 */
+                menuItems: {
+                    type: Array,
+                    value: function() {
+                        return [{}];
+                    }
+                }
+            },
+            ready: function () {
+                var self = this;
+                window.px.auth.loginUrl = this.loginUrl;
+                window.px.auth.logoutUrl = this.logoutUrl;
+                window.px.auth.userInfoUrl = this.userInfoUrl;
+                window.px.auth.getUserInfo().then(function (data) {
+                  self.userInfo = data;
+                });
+
+                document.body.addEventListener('nav-height-changed', this._onNavHeightChanged.bind(this));
+                document.body.addEventListener('nav-collapsing', this._onNavCollapsing.bind(this));
+                document.body.addEventListener('nav-expanded', this._onNavExpanded.bind(this));
+
+                window.onscroll = scroll;
+
+                function scroll () {
+                  if (window.pageYOffset + window.innerHeight >= document.body.scrollHeight - 60) {
+                    self.toggleClass('sticky', true);
+                  } else {
+                    self.toggleClass('sticky', false);
+                  }
+                };
+            },
+            _onNavExpanded: function(){
+              this.toggleClass('login--collapsed', false, this.$.logincontainer);
+            },
+            _onNavCollapsing: function(){
+              this.toggleClass('login--collapsed', true, this.$.logincontainer);
+            },
+            _onNavHeightChanged: function() {
+              if (window.innerHeight > document.body.clientHeight - 60) {
+                this.toggleClass('sticky', true);
+              } else {
+                this.toggleClass('sticky', false);
+              }
+            },
+            loginHandler: function (event, detail, sender) {
+                event.preventDefault();
+                event.stopPropagation();
+
+                this.login();
+            },
+            logoutHandler: function (event, detail, sender) {
+                event.preventDefault();
+                event.stopPropagation();
+
+                this.logout();
+            },
+            menuItemHandler: function(event){
+                event.preventDefault();
+                event.stopPropagation();
+                var targetUrl = event.currentTarget.getAttribute('url');
+                if (targetUrl){
+                    window.location = targetUrl;
+                }
+            },
+            login: function(){
+                window.px.auth.login();
+            },
+            logout: function(){
+                window.px.auth.logout();
+            }
+        });
+</script>

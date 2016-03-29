@@ -1,0 +1,122 @@
+<!doctype html>
+
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="favicon.ico" />
+    <title>px-simple-line-chart Demo</title>
+    <!-- Requires Webcomponents.js polyfill is provided by the page for browsers that don't support html imports -->
+    <script src="../webcomponentsjs/webcomponents-lite.min.js"></script>
+    <!-- Import custom element. Note: see comment about relative paths to dependencies in the *.html file referenced below -->
+    <link rel="import" href="../iron-ajax/iron-ajax.html"/>
+    <link rel="import" href="../px-theme/px-theme.html"/>
+    <link rel="import" href="px-simple-line-chart.html"/>
+    <style>
+        .example {
+            margin-right: 15px;
+            width: auto;
+            height: auto;
+            display: block;
+            float: left;
+        }
+        .config {
+            float: left;
+            width: 280px;
+        }
+        .description {
+            margin-right: 20px;
+            float: left;
+            width: 280px;
+        }
+        hr {
+            height: 1px;
+            border: 0;
+            background: #cccccc;
+            margin: 30px 0;
+        }
+    </style>
+</head>
+
+<body>
+
+<template id="just-for-demo" is="dom-bind">
+
+    <hr />
+
+    <div class="container" style="width: 100%; display: table; height: 100px;">
+
+        <div class="description" style="display: table-cell; float: none;">
+            <strong>Description</strong>
+            <br /><br />
+            <i>Example of px-simple-line-chart using automatic width and height to fill containing element.</i>
+        </div>
+
+        <div class="config" style="display: table-cell; float: none;">
+            <strong>Element Configuration</strong>
+            <br/><br/>
+            &lt;px-simple-line-chart<br />
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;width="auto"<br />
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;height="auto"<br />
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;min="0"<br />
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;max="2"<br />
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;threshold="1.23456754"
+            &gt;
+            <br />
+            &lt;/px-simple-line-chart&gt;
+        </div>
+
+        <div class="example" style="
+                        display: table-cell;
+                        width: auto;
+                        height: 320px;
+                        margin: 10px;
+                        float: none;
+                        overflow: hidden;">
+
+            <strong>Example chart</strong>
+            <br/><br/>
+
+            <px-simple-line-chart
+                    width="400"
+                    height="200"
+                    min="0"
+                    max="2"
+                    columns = 20
+                    rows = 20
+                    line-data="{{sampleData.series}}">
+            </px-simple-line-chart>
+
+
+        </div>
+
+    </div>
+
+    <div style="position: absolute; top: 5px; right: 10px;">
+        <px-simple-line-chart
+                width="40"
+                height="20"
+                columns="1"
+                rows="1"
+                line-data="{{sampleData.series}}">
+        </px-simple-line-chart>
+    </div>
+
+    <br clear="both" /><br /><br />
+    <hr />
+    <h3>101 Randomly Generated Examples:</h3>
+    <br clear="both"/>
+
+
+
+    <iron-ajax
+            auto
+            url="demo-data/sample-data.json"
+            handleAs="json"
+            last-response="{{sampleData}}">
+    </iron-ajax>
+
+</template>
+
+</body>
+</html>

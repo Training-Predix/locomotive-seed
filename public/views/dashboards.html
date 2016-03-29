@@ -1,0 +1,76 @@
+<!-- <px-context-browser
+        browser-context='{{initialContexts}}'
+        handlers="ngScope:handlers"
+        opened-item-name="{{initialContextName}}"
+        show-chevron="true">
+	<px-deck-selector ng-bind-polymer decks="{{decks}}" selected-deck="{{selectedDeck}}" ></px-deck-selector>
+</px-context-browser>
+
+<px-dashboard view-service-base-url="{{viewServiceBaseUrl}}" selected-deck-id="{{selectedDeck.id}}" context="{{context}}"></px-dashboard> -->
+
+ 
+ <!-- <div ng-show="allshow"> -->
+  
+ <px-card header-text="Locomotive Live Data Chart">
+        
+</px-card> 
+
+<!-- <px-card ng-init="getAllEntries()"  style="margin:0px 0px 0px 0px"> 
+ 	 
+	 	 <div id="dataheader">
+	 	 	<p style="color:#000000;font-size:24px;" > LOCOMOTIVE DATA FOR LOCOMOTIVE_1  </p>
+	 	 </div>
+	 	 <div id="data">{{allTorqueDetails}}</div>
+ 		<p></p>
+        
+</px-card>  -->
+
+
+
+<px-card   style="margin:0px 0px 0px 0px;background-color: #cce6ff;" > 
+ 	 
+	 	 <div id="dataheader">
+	 	 	<p style="color:#000000;font-size:24px;font-weight:bold" > DATA FOR LOCOMOTIVE 1 </p>
+	 	 </div>
+	 	 <div id="data" >
+	 	 
+	 	 	<p style="color:#000000;font-size:18px;"><span style="font-weight:bold">{{tr.name}}:::::::::::::::::</span></p>
+	 	 	<p>{{tr.results[0].values[0]}}</p>
+	 	 	<p></p>
+
+
+			<table border="1" style="width: 100%">
+				<tr >
+					<td style="font-weight:bold">Locomotive 1 Location</td>
+					<td style="font-size:14px">{{locname}}</td>
+					<td style="font-size:14px">{{locdata}}</td>
+				</tr>
+				<tr>
+					<td style="font-weight:bold">Locomotive 1 RPM Data</td>
+					<td style="font-size:14px">{{rpmname}}</td>
+					<td style="font-size:14px">{{rpmdata}}</td>
+				</tr>
+				<tr>
+					<td style="font-weight:bold">Locomotive 1 Torque Data</td>
+					<td style="font-size:14px">{{torname}}</td>
+					<td style="font-size:14px">{{tordata}}</td>
+				</tr>
+			</table>
+
+
+		</div>
+        
+</px-card> 
+
+
+
+<!-- <div id="data" style="background-color:#f2f2f2" >
+<px-data-table table-data="{{allTorqueDetails}}"></px-data-table> -->
+
+</div>
+
+
+ 
+ 
+ 
+ 

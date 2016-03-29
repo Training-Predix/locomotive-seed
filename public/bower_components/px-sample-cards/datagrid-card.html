@@ -1,0 +1,28 @@
+<link rel="import" href="../polymer/polymer.html" />
+<link rel="import" href="../px-card/px-card.html" />
+<link rel="import" href="../px-data-table/px-data-table.html" />
+
+<dom-module id="datagrid-card">
+  <template>
+    <px-card header-text="Datagrid">
+      <px-data-table filterable selectable table-data="{{data}}"></px-data-table>
+    </px-card>
+  </template>
+</dom-module>
+<script>
+  Polymer({
+    is: 'datagrid-card',
+    init: function() {
+      /**
+       * get data url from context property therefore this card can be resuable
+       */
+      var self = this;
+      if (this.context.urls && this.context.urls['datagrid-data']){
+          this.getData(this.context.urls['datagrid-data']).then(function (data) {
+              self.data = data;
+          });
+      }
+    },
+    behaviors: [px.card]
+  });
+</script>

@@ -1,0 +1,35 @@
+{
+  "name": "px-spinner",
+  "version": "0.1.1",
+  "main": [
+    "px-spinner.html"
+  ],
+  "ignore": [
+    ".*",
+    "npm-debug.log",
+    "Gruntfile.js",
+    "sass",
+    "bower_components",
+    "node_modules",
+    "test"
+  ],
+  "dependencies": {
+    "polymer": "~1.2.3",
+    "px-theme": "https://github.com/PredixDev/px-theme.git#~0.4.0",
+    "px-layout-design": "https://github.com/PredixDev/px-layout-design.git#~0.3.7"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#~v1.1.0",
+    "px-starter-kit-design": "https://github.com/PredixDev/px-starter-kit-design.git#~0.4.0"
+  },
+  "homepage": "https://github.com/predixdev/px-spinner",
+  "_release": "0.1.1",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.1.1",
+    "commit": "d57a1134d50625d92986636bf32025939adc8a63"
+  },
+  "_source": "https://github.com/predixdev/px-spinner.git",
+  "_target": "~0.1.1",
+  "_originalSource": "https://github.com/predixdev/px-spinner.git"
+}

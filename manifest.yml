@@ -1,0 +1,24 @@
+---
+applications:
+  - name: <yourname>-locomotive-predix-seed
+    buildpack: predix_openresty_buildpack
+    path: dist
+    memory: 64M
+    stack: cflinuxfs2
+    services:
+            - <your Redis svc instance name> # change this to your redis service instance name
+            - <your Views svc instance name> # change this to your views service instance name
+            - <your Asset svc instance name> # asset instance name
+    env:
+      #UAA_SERVER_URL: https://2e93f1db-9f2c-43e9-9fa9-7ba816c8f01c.predix-uaa-training.run.aws-usw02-pr.ice.predix.io # change to your UAA instance url
+      UAA_SERVER_URL: https://<your UAA zone ID>.predix-uaa-training.run.aws-usw02-pr.ice.predix.io
+      assetUrl: https://predix-asset.run.aws-usw02-pr.ice.predix.io
+      #assetZoneId: 160fbeaf-1e6e-4499-922c-fea0525e548e
+      assetZoneId: <your Asset Zone ID>
+      #predix_oauthClientId: YXNoYS1jbGllbnQ6Y2xpZW50c2VjcmV0
+      predix_oauthClientId: <Base 64 Encoded value for clientName:clientSecret
+      #locomotiveClientUrl: https://locomotive-client-service-Asha.run.aws-usw02-pr.ice.predix.io
+      locomotiveClientUrl:<your Locomotive client URL>
+      REDIS: redis-1 #redis service name from the marketplace
+      
+      

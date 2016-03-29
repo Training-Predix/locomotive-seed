@@ -1,0 +1,24 @@
+@CHARSET "ISO-8859-1";
+#locomotive {
+	height: 345px;
+	width: 335px;
+	background-color: grey;
+	box-shadow: 10px 10px 5px #888888;
+	margin-top:15px
+}
+.locomotiveDetailColor {
+	color:#fff;
+}
+
+.locomotiveViewButton {
+	margin-top: -12px;
+	width:101px;
+	height:35px;
+	border:2px solid #c8c8c8;
+	font-size:13px;
+	border-radius:15px;
+	background:#fff;
+	margin-left:200px;
+}
+
+      
