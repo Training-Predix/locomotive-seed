@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Locomotive-seed by Training-Predix</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Locomotive-seed</h1>
+      <h2 class="project-tagline">Updated Dashboard Seed to View locomotive data</h2>
+      <a href="https://github.com/Training-Predix/locomotive-seed" class="btn">View on GitHub</a>
+      <a href="https://github.com/Training-Predix/locomotive-seed/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/Training-Predix/locomotive-seed/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="predix-experience-20-seed" class="anchor" href="#predix-experience-20-seed" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Predix Experience 2.0 Seed</h1>
+
+<p>Dashboard Seed is an application that uses Px Web Components and <a href="https://github.com/PredixDev/px-library-design/">Px UI Elements</a> inside an Angular application.</p>
+
+<h2>
+<a id="to-run-the-dashboard-seed" class="anchor" href="#to-run-the-dashboard-seed" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>To Run the Dashboard Seed</h2>
+
+<h3>
+<a id="get-the-source-code" class="anchor" href="#get-the-source-code" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Get the source code</h3>
+
+<p>Make a directory for your project.  Clone or download and extract the seed in that directory.</p>
+
+<pre><code>git clone
+</code></pre>
+
+<h3>
+<a id="install-the-dependencies" class="anchor" href="#install-the-dependencies" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Install the dependencies</h3>
+
+<pre><code>npm install
+bower install
+</code></pre>
+
+<h3>
+<a id="create-a-dist-version" class="anchor" href="#create-a-dist-version" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Create a dist version</h3>
+
+<p>Use grunt to create a distribution version of your app, which will be located in the dist folder along with the nginx configuration files.  You will need to run this command during development every time before you cf push to make the latest dist.</p>
+
+<pre><code>grunt dist
+</code></pre>
+
+<h2>
+<a id="setup-services-for-your-own-development" class="anchor" href="#setup-services-for-your-own-development" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Setup services for your own development</h2>
+
+<p>Once you're ready to actually start developing, you'll need to setup your own UAA and Views service.</p>
+
+<h3>
+<a id="uaa" class="anchor" href="#uaa" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>UAA</h3>
+
+<ol>
+<li>Create a UAA instance following <a href="https://www.predix.io/docs/?r=250183#XpKGAdQ7-Q0CoIStl">these steps</a>.
+
+<ul>
+<li>Note: Make a note of the client secret; you will need it later.</li>
+</ul>
+</li>
+<li>Get the url of that UAA instance
+
+<ol>
+<li>Locate any application you have running on cloud foundry.  If you don't have one, you'll have to push some app up there.</li>
+<li>Follow <a href="https://www.predix.io/docs/?r=250183#sXp7cw5P-Q0CoIStl">these steps</a> to bind your dummy app to UAA.</li>
+<li>Save the uri and issuerId of your UAA instance.</li>
+</ol>
+</li>
+</ol>
+
+<h3>
+<a id="views" class="anchor" href="#views" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Views</h3>
+
+<p>Create a Views instance following <a href="https://www.predix.io/docs/?r=250183#yyKdebUl">these steps</a>.  Use the UAA issuerId that you gathered above for your trusted issuer.</p>
+
+<ul>
+<li>Note: You must use underscores in your service instance name currently (my_view_service, NOT my-view-service)</li>
+</ul>
+
+<h3>
+<a id="redis" class="anchor" href="#redis" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Redis</h3>
+
+<p>Create a Redis instance, which is used by nginx for storing your session.</p>
+
+<pre><code>cf cs redis &lt;plan&gt; &lt;instance_name&gt;
+</code></pre>
+
+<h2>
+<a id="push-to-the-cloud" class="anchor" href="#push-to-the-cloud" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Push to the cloud</h2>
+
+<p>Now that you have the required services created, we can push to the cloud for the first time.</p>
+
+<ol>
+<li>
+<p>Update manifest.yml</p>
+
+<p>You'll need to change these fields in your manifest.yml before pushing to the cloud.</p>
+
+<pre><code>  - name: my-predix-seed # change this to your application name
+    services:
+            - your_redis_instance # change this to your redis service instance name
+            - your_view_service_instance # change this to your view service instance name
+    env:
+      UAA_SERVER_URL: https://your-uaa-instance.grc-apps.svc.ice.ge.com # change to your UAA instance url
+      REDIS: redis # change this to the name of the Redis service in your marketplace (when you do cf m).  It may be redis, or something else
+</code></pre>
+</li>
+<li>
+<p>Update View service reference in nginx.conf</p>
+
+<p>You need to update nginx.conf (in the dist folder) wherever it has references to predix_seed_view_service to the name of your_view_service_instance, which is whatever you specified in step 1.</p>
+
+<pre><code># for example, from
+proxy_set_header    predix-zone-id   "&lt;%= ENV["vcap_service_predix_seed_view_service_instanceId"] %&gt;";
+proxy_pass  "&lt;%= ENV["vcap_service_predix_seed_view_service_uri"] %&gt;";
+
+# to (assuming you changed your_view_service_instance to my_special_views_service in your manifest.yml)
+proxy_set_header    predix-zone-id   "&lt;%= ENV["vcap_service_my_special_views_service_instanceId"] %&gt;";
+proxy_pass  "&lt;%= ENV["vcap_service_my_special_views_service_uri"] %&gt;";
+</code></pre>
+</li>
+<li>
+<p>Make a unique session_secret and set it in nginx.conf.</p>
+
+<pre><code># example, for Mac
+openssl rand -base64 32
+</code></pre>
+
+<pre><code>set $session_secret &lt;my-session-secret&gt;;
+</code></pre>
+</li>
+<li>
+<p>Push to the cloud. </p>
+
+<pre><code>cf push
+</code></pre>
+
+<p>If your app is started successfully, go to the url that is printed out. You should see your app running, and it will redirect to a page with a message <strong>"Uh oh. Something went amiss"</strong>.  </p>
+
+<ul>
+<li>Note: This is just the first time pushing your application to cloudfoundry. You will need to push a few more times before completing the setup. </li>
+</ul>
+</li>
+</ol>
+
+<h2>
+<a id="get-views-service-url-and-instance-id" class="anchor" href="#get-views-service-url-and-instance-id" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Get Views service url and instance id</h2>
+
+<p>The cf env command for your app will provide you the details of the services your app is bound to.</p>
+
+<pre><code>cf env &lt;your-app&gt;
+</code></pre>
+
+<p>In VCAP_SERVICES, look for the "predix-views" section.  Write down the instanceId and uri.</p>
+
+<h2>
+<a id="set-up-uaa-client" class="anchor" href="#set-up-uaa-client" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Set up UAA client</h2>
+
+<p>You are not able to see the login page because you have a fresh UAA instance which is not setup with an OAuth2 client.</p>
+
+<ol>
+<li><p>Target your UAA and Log in as Admin
+Follow <a href="https://www.predix.io/docs/?r=913171#JA5oCs7">these steps</a>.  You will need the UAA uri and client secret that you saved previously.</p></li>
+<li>
+<p>Create OAuth2 client</p>
+
+<p>First, you will need to generate a client secret and save it for later.</p>
+
+<pre><code># example, for Mac
+openssl rand -base64 32
+</code></pre>
+
+<p>Next, we will continue using uaac to add a client for your application.  Use the interactive mode (-i) to add your client.</p>
+
+<pre><code>uaac client add &lt;your-client&gt; -i
+</code></pre>
+
+<p>At the prompts, specify:</p>
+
+<ul>
+<li>client secret: the secret that you generated above</li>
+<li>scope: openid scim.me</li>
+<li>authorized grant types: refresh_token authorization_code</li>
+<li>authorities: openid scim.me uaa.resource</li>
+<li>autoapprove: openid scim.me</li>
+<li>just hit return for any other options</li>
+</ul>
+
+<p>See <a href="https://www.predix.io/docs/?r=913171#uAyBrT9y">the documentation</a> for more detailed information about creating clients and the UAA options.</p>
+</li>
+<li>
+<p>Update nginx.conf with your client</p>
+
+<p>Change the $client_id in nginx.conf to the client name you just created.</p>
+
+<pre><code>set $client_id &lt;your-client&gt;;
+</code></pre>
+
+<p>Generate the UAA authorization header for your client by base64 encoding your client and client's secret.</p>
+
+<pre><code>base64 encode the following string: "&lt;client-name&gt;:&lt;client secret&gt;"
+</code></pre>
+
+<p>Finally, set the $uaa_authorization_header to Basic authentication with this header.</p>
+
+<pre><code>set $uaa_authorization_header  "Basic &lt;your-auth-header&gt;";
+</code></pre>
+</li>
+<li>
+<p>cf push</p>
+
+<p>If you cf push again, you should now be successfully redirected to a login page, but you don't have anyone to log in as.</p>
+</li>
+</ol>
+
+<h2>
+<a id="update-grunt-for-local-development" class="anchor" href="#update-grunt-for-local-development" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Update grunt for local development</h2>
+
+<p>Node and grunt are great for development, but we will have to configure them separately.</p>
+
+<p>All the settings you will need to touch are at the top of tasks/options/connect.js.</p>
+
+<ol>
+<li>
+<p>UAA</p>
+
+<p>Update the uaa object with:</p>
+
+<ul>
+<li>clientId - your client</li>
+<li>serverUrl - your UAA instance url (like <a href="https://my.uaa.instance.predix.io">https://my.uaa.instance.predix.io</a>)</li>
+<li>base64ClientCredential - the authorization header you used above <code>(base64(&lt;client-name&gt;:&lt;client secret&gt;))</code>
+
+<ul>
+<li>do NOT include "Basic ", just the base 64 string</li>
+</ul>
+</li>
+</ul>
+
+<pre><code>uaa: {
+    clientId: '&lt;your-client&gt;', 
+    serverUrl: '&lt;your-server-url&gt;', 
+    defaultClientRoute: '/about',
+    base64ClientCredential: '&lt;your-client-credential&gt;'
+},
+</code></pre>
+</li>
+<li>
+<p>Views</p>
+
+<p>Update the view-service proxy object with:</p>
+
+<ul>
+<li>url - your view service url, with /api$1 at the end of it (like <a href="http://my-view-service.predix.io/api%241">http://my-view-service.predix.io/api$1</a>)</li>
+<li>instanceId - your view service instance id</li>
+</ul>
+
+<pre><code>proxy: {
+'/api/view-service(.*)': {
+  url: '&lt;your-view-service-url&gt;/api$1',
+  instanceId: '&lt;your-view-service-instance&gt;'
+}
+</code></pre>
+</li>
+</ol>
+
+<h2>
+<a id="set-up-authorized-user" class="anchor" href="#set-up-authorized-user" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Set up authorized user</h2>
+
+<p>Now that you can see the login page, let's set up a user that we can log in with.</p>
+
+<ol>
+<li>
+<p>Add a user</p>
+
+<p>Add a user to your UAA instance by providing a user name, email address, and password.</p>
+
+<pre><code>uaac user add rocket --emails rocket@example.com -p Gu@rdian5
+</code></pre>
+</li>
+<li>
+<p>cf push</p>
+
+<p>Now when you cf push, you should be able to login as the user you set up above.  After you login, you should be redirected back to the seed application where you can see the blank page and dashboard.  But, when you select a context, you don't have any views displayed.</p>
+</li>
+</ol>
+
+<h2>
+<a id="add-views-to-your-views-service-instance" class="anchor" href="#add-views-to-your-views-service-instance" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Add views to your Views service instance</h2>
+
+<p>To add views and cards to your Views service, you can use the tool of your choice (for example, Postman) to hit your Views service endpoint with the proper headers.</p>
+
+<h3>
+<a id="make-sure-the-views-service-is-up" class="anchor" href="#make-sure-the-views-service-is-up" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Make sure the Views service is up</h3>
+
+<p>Do a GET request to your views service url that we just found.</p>
+
+<p>You should get a 200 OK response that has a started and uptime, which show that the service is up and running successfully.</p>
+
+<h3>
+<a id="give-user-permission-to-see-views" class="anchor" href="#give-user-permission-to-see-views" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Give user permission to see views</h3>
+
+<p>The first thing we need to do is give our dummy user permission to see the views, which the following steps walk you through.  For more information on creating groups and scopes, see <a href="https://www.predix.io/docs/?r=913171#RulzoBew">the documentation</a>.</p>
+
+<ol>
+<li>
+<p>Create a group in your UAA instance for views</p>
+
+<pre><code>uaac group add views.zones.&lt;your-views-instance-id&gt;.user
+
+# example:
+uaac group add views.zones.1234567890.user
+</code></pre>
+</li>
+<li>
+<p>Add the user(s) you created earlier to this group</p>
+
+<pre><code>uaac member add views.zones.&lt;your-views-instance-id&gt;.user &lt;your-user&gt;
+
+# example:
+uaac member add views.zones.1234567890.user rocket
+</code></pre>
+</li>
+<li>
+<p>Update your client scope to include this group</p>
+
+<p>Use uaac to get your current client scope, and add the group you just created to this list.</p>
+
+<pre><code>uaac client get &lt;your-client&gt; 
+uaac client update &lt;your-client&gt; --scope views.zones.&lt;your-views-instance-id&gt;.user,&lt;other&gt;,&lt;scopes&gt;
+
+# example:
+uaac client update my-client --scope openid,views.zones.123456790.user,scim.me
+</code></pre>
+</li>
+<li>
+<p>Update your client autoapprove to include this group</p>
+
+<p>Use uaac to get your current client autoapprove, and add the group you just created to this list.</p>
+
+<pre><code>uaac client get &lt;your-client&gt; 
+uaac client update &lt;your-client&gt; --autoapprove views.zones.&lt;your-views-instance-id&gt;.user,&lt;other&gt;,&lt;autoapproves&gt;
+
+# example:
+uaac client update &lt;your-client&gt; --autoapprove openid,scim.me,views.zones.&lt;your-views-instance-id&gt;.user
+</code></pre>
+</li>
+</ol>
+
+<h3>
+<a id="understanding-the-headers" class="anchor" href="#understanding-the-headers" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Understanding the headers</h3>
+
+<p>Do a GET request to /api/decks, with no headers specified.</p>
+
+<pre><code>&lt;your-views-service-url&gt;/api/decks
+example: https://my-views-service.predix.io/api/decks
+</code></pre>
+
+<p>You should get a 500 response because you are missing two mandatory headers.</p>
+
+<ol>
+<li>
+<p>predix-zone-id header</p>
+
+<p>The predix-zone-id header is used for multi-tenancy; it specifies which views service instance is yours.</p>
+
+<p>Set the predix-zone-id header to your Views instance id that you pulled earlier from VCAP_SERVICES.</p>
+
+<pre><code>predix-zone-id : &lt;your-views-instance-id&gt;
+</code></pre>
+</li>
+<li>
+<p>Authorization header</p>
+
+<p>The Authorization header requires a JWT token which includes information about the user and their roles.</p>
+
+<p>To get the JWT token, you will need to log in locally through your application.</p>
+
+<ul>
+<li>Run your app and go to localhost:9000 in your browser</li>
+<li>Sign in</li>
+<li>In the terminal that you ran your app from, you will see the token printed out (this only happens in development mode).</li>
+<li>Copy this token</li>
+</ul>
+
+<p>Set the Authorization header to your token.</p>
+
+<pre><code>Authorization : bearer &lt;your-token&gt;
+</code></pre>
+</li>
+</ol>
+
+<p>Repeat the request to /api/decks with both headers.  You should (finally) get back an empty array of data!</p>
+
+<h3>
+<a id="add-the-dummy-data-to-your-views-service" class="anchor" href="#add-the-dummy-data-to-your-views-service" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Add the dummy data to your views service</h3>
+
+<p>We will just quickly tell you how to add the dummy data in the demo to your Views service instance.  For more information on the API, see the <a href="https://www.predix.io/docs/?r=182801#IZkY1Ssd">documentation</a>.</p>
+
+<p>Note: You may also need to set Content-Type header to application/json for the POSTs below.</p>
+
+<h4>
+<a id="add-decks" class="anchor" href="#add-decks" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Add decks</h4>
+
+<p>Add the 3 decks that are in the seed app.</p>
+
+<pre><code>POST /api/decks 
+
+[
+  {
+    "title": "Overview"
+  },
+  {
+    "title": "Detail"
+  },
+  {
+    "title": "Datagrid View"
+  }
+]
+</code></pre>
+
+<h4>
+<a id="add-cards" class="anchor" href="#add-cards" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Add cards</h4>
+
+<p>Add the 4 cards that are in the seed app.</p>
+
+<pre><code>POST /api/cards 
+
+[
+  {
+    "title": "datagrid card",
+    "slug": "datagrid-card"
+  },
+  {
+    "title": "widgets card",
+    "slug": "widgets-card"
+  },
+  {
+    "title": "gist card",
+    "slug": "gist-card"
+  },
+  {
+    "title": "time series card",
+    "slug": "time-series-card"
+  }
+]
+</code></pre>
+
+<h4>
+<a id="put-the-cards-in-the-decks" class="anchor" href="#put-the-cards-in-the-decks" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Put the cards in the decks</h4>
+
+<p>Add the cards to the specified decks.  The ids may be different since the bulk creates are asynchronous, so you may need to change the ids accordingly.</p>
+
+<p>Overview deck has widgets and gist card (ids may change)</p>
+
+<pre><code>POST /decks/1/cards/add
+
+["2", "3"]
+</code></pre>
+
+<p>Detail deck has time series card (ids may change)</p>
+
+<pre><code>POST /decks/2/cards/add
+
+["4"]
+</code></pre>
+
+<p>Datagrid View deck has datagrid card (ids may change)</p>
+
+<pre><code>POST /decks/3/cards/add
+
+["1"]
+</code></pre>
+
+<h4>
+<a id="tag-the-decks" class="anchor" href="#tag-the-decks" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Tag the decks</h4>
+
+<p>Tag the decks with appropriate tags so we can filter which contexts they will be displayed for.  In this simple example, the Parent Asset has the tag parent and the Child Asset has the tag child.</p>
+
+<p>Overview deck is shown for the parent tag (ids may change)</p>
+
+<pre><code>POST /api/decks/1/tags
+
+[{"value":"parent"}]
+</code></pre>
+
+<p>Detail deck is shown for the child tag (ids may change)</p>
+
+<pre><code>POST /api/decks/2/tags
+
+[{"value":"child"}]
+</code></pre>
+
+<p>Datagrid View deck is shown for the parent tag (ids may change)</p>
+
+<pre><code>POST /api/decks/3/tags
+
+[{"value":"parent"}]
+</code></pre>
+
+<h3>
+<a id="view-the-final-result" class="anchor" href="#view-the-final-result" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>View the final result!</h3>
+
+<p>cf push again, and your application should now look just like the demo seed app.</p>
+
+<h2>
+<a id="questions" class="anchor" href="#questions" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Questions?</h2>
+
+<ul>
+<li>Ask questions and file tickets on <a href="https://www.predix.io/community"></a><a href="https://www.predix.io/community">https://www.predix.io/community</a>.</li>
+</ul>
+
+<h1>
+<a id="copyright" class="anchor" href="#copyright" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Copyright</h1>
+
+<p>Copyright © 2015 GE Global Research. All rights reserved.</p>
+
+<p>The copyright to the computer software herein is the property of
+GE Global Research. The software may be used and/or copied only
+with the written permission of GE Global Research or in accordance
+with the terms and conditions stipulated in the agreement/contract
+under which the software has been supplied.</p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/Training-Predix/locomotive-seed">Locomotive-seed</a> is maintained by <a href="https://github.com/Training-Predix">Training-Predix</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
