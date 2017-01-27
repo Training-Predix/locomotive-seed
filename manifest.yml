@@ -16,9 +16,11 @@ applications:
       #assetZoneId: 160fbeaf-1e6e-4499-922c-fea0525e548e
       assetZoneId: <your Asset Zone ID>
       #predix_oauthClientId: YXNoYS1jbGllbnQ6Y2xpZW50c2VjcmV0
-      predix_oauthClientId: <Base 64 Encoded value for clientName:clientSecret
-      #locomotiveClientUrl: https://locomotive-client-service-Asha.run.aws-usw02-pr.ice.predix.io
-      locomotiveClientUrl:<your Locomotive client URL>
-      REDIS: redis-1 #redis service name from the marketplace
+      predix_oauthClientId: <Base 64 Encoded value for clientName:clientSecret>
+      #locomotiveClientUrl: https://locomotive-client-service-student55.run.aws-usw02-pr.ice.predix.io
+      locomotiveClientUrl: https://<your Locomotive client URL>
+      REDIS: <redis-x> #redis service name from the marketplace
+
+      
       
       
